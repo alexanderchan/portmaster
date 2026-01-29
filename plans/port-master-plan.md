@@ -183,6 +183,156 @@ STORAGE
 
 ---
 
+## Phase 1b: Claude Code Skill
+
+Create a Claude Code skill so AI agents can use port-master directly.
+
+### Skill Structure
+
+Based on [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) skill format:
+
+```
+skills/
+  port-master/
+    SKILL.md              # Main skill definition
+    templates/
+      package-json.sh     # Template for adding port to package.json scripts
+```
+
+### SKILL.md Format
+
+```markdown
+---
+name: port-master
+description: Use when you need to assign or look up development ports for the current project. Triggers on requests like "what port should I use", "assign a port for redis", "list my ports", or when setting up dev servers, databases, or services that need consistent port assignments.
+allowed-tools: Bash(port-master:*)
+---
+
+# port-master
+
+Track and assign consistent development ports per project directory.
+
+## Quick Start
+
+\`\`\`bash
+port-master get dev                    # Get/create dev server port
+port-master get pg --desc "Main DB"    # Get postgres port with description
+port-master list                       # List all assignments
+port-master info                       # Show ports for current directory
+\`\`\`
+
+## Core Workflow
+
+1. **Check existing**: `port-master info` to see current directory's ports
+2. **Get or create**: `port-master get <type>` returns existing or allocates new
+3. **Use the port**: Output is just the port number for easy scripting
+
+## Commands
+
+### Get/Add Port (idempotent)
+\`\`\`bash
+port-master get <type>                 # Get or create port for type
+port-master get <type> --desc "text"   # With description
+port-master get <type> --dir /path     # For specific directory
+port-master add <type>                 # Alias for get
+\`\`\`
+
+**Common types**: `dev`, `pg`, `postgres`, `redis`, `mongo`, `db`, `api`, `web`
+
+### List All Ports
+\`\`\`bash
+port-master list                       # Short directory names
+port-master list --verbose             # Full paths
+port-master list --json                # JSON output
+\`\`\`
+
+### Show Current Directory
+\`\`\`bash
+port-master info                       # Ports for cwd
+port-master info --dir /path           # Ports for specific dir
+\`\`\`
+
+### Remove Port
+\`\`\`bash
+port-master rm <type>                  # Remove from cwd
+port-master rm <type> --dir /path      # Remove from specific dir
+\`\`\`
+
+### Cleanup Stale Entries
+\`\`\`bash
+port-master cleanup                    # Remove entries for deleted directories
+port-master cleanup --dry-run          # Preview what would be removed
+\`\`\`
+
+## Port Ranges
+
+| Type | Range | Notes |
+|------|-------|-------|
+| dev | 3100-3999 | Dev servers |
+| pg, postgres | 5500-5599 | PostgreSQL |
+| redis | 6400-6499 | Redis |
+| mongo | 27100-27199 | MongoDB |
+| db | 5600-5699 | Generic database |
+| other | 9100-9999 | Catch-all |
+
+## Examples
+
+### Setting up a new project
+\`\`\`bash
+cd /path/to/my-project
+DEV_PORT=$(port-master get dev --desc "Next.js dev server")
+DB_PORT=$(port-master get pg --desc "Local postgres")
+echo "Dev: $DEV_PORT, DB: $DB_PORT"
+\`\`\`
+
+### Using in package.json scripts
+\`\`\`bash
+# Get the port, then update package.json
+PORT=$(port-master get dev)
+# Use $PORT in your dev script configuration
+\`\`\`
+
+### Docker Compose port mapping
+\`\`\`bash
+PG_PORT=$(port-master get pg)
+# Use in docker-compose.yml: ports: ["${PG_PORT}:5432"]
+\`\`\`
+
+## Storage
+
+Database: `~/.config/port-master/ports.db`
+```
+
+### Templates
+
+**templates/package-json.sh** - Helper to update package.json with assigned port:
+```bash
+#!/bin/bash
+# Usage: source this after getting a port
+# Expects: $PORT variable set
+
+PORT=${PORT:-$(port-master get dev)}
+echo "Assigned port: $PORT"
+echo "Add to package.json scripts:"
+echo "  \"dev\": \"next dev -p $PORT\""
+```
+
+### Installation as Skill
+
+To install the skill for Claude Code:
+
+```bash
+# Copy skill to Claude Code skills directory
+cp -r skills/port-master ~/.claude/skills/
+```
+
+Or symlink for development:
+```bash
+ln -s $(pwd)/skills/port-master ~/.claude/skills/port-master
+```
+
+---
+
 ## Phase 2: Traefik Integration
 
 ### Goal
@@ -254,6 +404,14 @@ Will add Authentik forward-auth middleware for all routes.
 5. **Build & bin** - ESM build, executable entry point
 6. **Tests** - Unit tests for port allocation, DB operations
 
+### Phase 1b Tasks
+
+1. **Create skill directory** - `skills/port-master/`
+2. **Write SKILL.md** - Full skill definition with examples
+3. **Add templates** - Helper scripts for common integrations
+4. **Test skill loading** - Verify Claude Code picks up the skill
+5. **Document installation** - README instructions for skill setup
+
 ### Dependencies to Install
 
 ```bash
@@ -271,3 +429,10 @@ pnpm add -D @types/better-sqlite3
 - `get` is idempotent - returns existing port or creates new
 - Descriptions are optional, can be updated
 - CLI should work headless (no prompts when piped)
+
+---
+
+## References
+
+- [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser) - Skill format reference
+- [BloopAI/dev-manager-mcp](https://github.com/BloopAI/dev-manager-mcp) - Evaluated, not suitable (runtime only)
