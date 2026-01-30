@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { executeGet } from "./commands/get.js";
+import { executeList } from "./commands/list.js";
 
 const program = new Command();
 
@@ -25,6 +26,16 @@ program
   .option("--desc <description>", "Optional description for the port assignment")
   .action((type: string, options: { dir?: string; desc?: string }) => {
     executeGet(type, options);
+  });
+
+// List command - show all assigned ports
+program
+  .command("list")
+  .description("Show all assigned ports across projects")
+  .option("-v, --verbose", "Show full absolute paths instead of basenames")
+  .option("--json", "Output as JSON array")
+  .action((options: { verbose?: boolean; json?: boolean }) => {
+    executeList(options);
   });
 
 program.parse();
