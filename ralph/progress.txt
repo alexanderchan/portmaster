@@ -70,3 +70,24 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Port types are case-insensitive (normalized to lowercase)
 ---
 
+## 2026-01-30 - US-004
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Created Zod schemas and TypeScript types at packages/cli/src/types.ts
+- PortEntry schema with id, directory, port_type, port, description (nullable), timestamps
+- KnownPortTypeSchema as enum of known types (dev, pg, postgres, redis, mongo, db)
+- PortTypeSchema as flexible string type for custom types
+- CLI options schemas for all commands:
+  - GetOptionsSchema (with dir, desc options)
+  - ListOptionsSchema (with verbose, json options)
+  - InfoOptionsSchema (with dir, json options)
+  - RmOptionsSchema (with dir, interactive options)
+  - CleanupOptionsSchema (with dryRun, interactive options)
+- Utility schemas: PortRange, PortDisplayInfo, CreatePortEntry
+- All types exported via z.infer<typeof Schema>
+- **Files changed:** packages/cli/src/types.ts
+- **Learnings for future iterations:**
+  - Zod schemas provide runtime validation + TypeScript types in one definition
+  - Use z.infer<typeof Schema> to export types automatically
+  - Separate schemas for database records vs create inputs (without auto-generated fields)
+---
+
