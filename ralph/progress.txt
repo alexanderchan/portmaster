@@ -6,9 +6,11 @@
 - CLI package lives in `packages/cli/` directory
 - Use `pnpm typecheck` to run type checking in the CLI package
 - Use `pnpm build` to build the CLI with tsup
-- tsup.config.ts adds shebang automatically via banner option
+- tsup.config.ts adds shebang automatically via banner option - do NOT add shebang in source files
 - pnpm workspace configured to include `packages/*`
 - Use `.js` extension in TypeScript imports for ESM compatibility (e.g., `import { getDb } from "./db.js"`)
+- CLI commands live in `packages/cli/src/commands/` directory
+- Commands export both a core function (for testing) and an executeX function (for CLI output)
 
 ---
 
@@ -89,5 +91,24 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Zod schemas provide runtime validation + TypeScript types in one definition
   - Use z.infer<typeof Schema> to export types automatically
   - Separate schemas for database records vs create inputs (without auto-generated fields)
+---
+
+## 2026-01-30 - US-005
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented 'get' command at packages/cli/src/commands/get.ts
+- Command: port-master get <type> gets or creates a port for a service type
+- Returns existing port if (directory, type) exists in database
+- Creates and returns new port if none exists using findAvailablePort()
+- Output is just the port number (no extra text) for scripting
+- --desc 'text' adds optional description to the port entry
+- --dir /path targets specific directory instead of cwd
+- 'add' command works as alias for 'get' (same handler)
+- Updated src/index.ts to remove shebang (tsup adds it via banner)
+- Registered both get and add commands with commander
+- **Files changed:** packages/cli/src/commands/get.ts, packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Don't include shebang in source files when tsup has banner config for it (causes duplication)
+  - Commander aliases can be implemented as separate commands calling the same handler
+  - Use resolve() from node:path to normalize directory paths
 ---
 
