@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { executeGet } from "./commands/get.js";
 import { executeInfo } from "./commands/info.js";
 import { executeList } from "./commands/list.js";
+import { executeRm } from "./commands/rm.js";
 
 const program = new Command();
 
@@ -47,6 +48,16 @@ program
   .option("--json", "Output as JSON")
   .action((options: { dir?: string; json?: boolean }) => {
     executeInfo(options);
+  });
+
+// Rm command - remove a port assignment
+program
+  .command("rm <type>")
+  .description("Remove a port assignment for a service type")
+  .option("-d, --dir <path>", "Target directory instead of current working directory")
+  .option("-i, --interactive", "Prompt for confirmation before removing")
+  .action(async (type: string, options: { dir?: string; interactive?: boolean }) => {
+    await executeRm(type, options);
   });
 
 program.parse();
