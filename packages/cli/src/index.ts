@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { executeGet } from "./commands/get.js";
+import { executeInfo } from "./commands/info.js";
 import { executeList } from "./commands/list.js";
 
 const program = new Command();
@@ -36,6 +37,16 @@ program
   .option("--json", "Output as JSON array")
   .action((options: { verbose?: boolean; json?: boolean }) => {
     executeList(options);
+  });
+
+// Info command - show all ports for the current project
+program
+  .command("info")
+  .description("Show all ports assigned to the current project")
+  .option("-d, --dir <path>", "Target directory instead of current working directory")
+  .option("--json", "Output as JSON")
+  .action((options: { dir?: string; json?: boolean }) => {
+    executeInfo(options);
   });
 
 program.parse();
