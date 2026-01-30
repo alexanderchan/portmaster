@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { executeCleanup } from "./commands/cleanup.js";
 import { executeGet } from "./commands/get.js";
 import { executeInfo } from "./commands/info.js";
 import { executeList } from "./commands/list.js";
@@ -58,6 +59,16 @@ program
   .option("-i, --interactive", "Prompt for confirmation before removing")
   .action(async (type: string, options: { dir?: string; interactive?: boolean }) => {
     await executeRm(type, options);
+  });
+
+// Cleanup command - remove entries for deleted project directories
+program
+  .command("cleanup")
+  .description("Remove entries for deleted project directories")
+  .option("-n, --dry-run", "Show what would be removed without removing")
+  .option("-i, --interactive", "Prompt for confirmation before removing")
+  .action(async (options: { dryRun?: boolean; interactive?: boolean }) => {
+    await executeCleanup(options);
   });
 
 program.parse();
