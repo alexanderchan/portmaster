@@ -1,0 +1,209 @@
+{
+  "project": "port-master",
+  "branchName": "ralph/port-master-cli",
+  "description": "CLI tool that tracks and assigns consistent development ports per project directory, with Claude Code skill integration",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Initialize project structure and dependencies",
+      "description": "As a developer, I need the project scaffolded with TypeScript, ESM, and core dependencies.",
+      "acceptanceCriteria": [
+        "Create packages/cli directory structure",
+        "package.json with name 'port-master', type 'module', bin entry",
+        "Dependencies: better-sqlite3, commander, zod, @clack/prompts",
+        "DevDependencies: typescript, tsx, @types/better-sqlite3, tsup",
+        "tsconfig.json with ESM, strict mode, NodeNext module resolution",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Create database module with auto-initialization",
+      "description": "As a developer, I need the SQLite database created automatically on first use.",
+      "acceptanceCriteria": [
+        "Database path: ~/.config/port-master/ports.db",
+        "Auto-create parent directories if missing",
+        "Schema: id, directory, port_type, port, description, created_at, updated_at",
+        "UNIQUE constraint on (directory, port_type)",
+        "UNIQUE constraint on port (globally unique)",
+        "Export getDb() function that initializes lazily",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Create port allocation logic with type-specific ranges",
+      "description": "As a developer, I need ports allocated from logical ranges based on service type.",
+      "acceptanceCriteria": [
+        "dev type: 3100-3999",
+        "pg/postgres type: 5500-5599",
+        "redis type: 6400-6499",
+        "mongo type: 27100-27199",
+        "db type: 5600-5699",
+        "Unknown types: 9100-9999 (catch-all)",
+        "Function findAvailablePort(type) returns first unused port in range",
+        "Falls back to catch-all if primary range exhausted",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Create Zod schemas and TypeScript types",
+      "description": "As a developer, I need validated types for database records and CLI options.",
+      "acceptanceCriteria": [
+        "PortEntry schema: id, directory, port_type, port, description (nullable), timestamps",
+        "PortType schema: string enum or union of known types",
+        "CLI options schemas for each command",
+        "Export inferred TypeScript types",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Implement 'get' command",
+      "description": "As a developer, I want to get or create a port for a service type in my project.",
+      "acceptanceCriteria": [
+        "Command: port-master get <type>",
+        "Returns existing port if (cwd, type) exists in db",
+        "Creates and returns new port if none exists",
+        "Output is just the port number (no extra text)",
+        "--desc 'text' adds optional description",
+        "--dir /path targets specific directory instead of cwd",
+        "'add' works as alias for 'get'",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Implement 'list' command",
+      "description": "As a developer, I want to see all assigned ports across projects.",
+      "acceptanceCriteria": [
+        "Command: port-master list",
+        "Shows table: PORT, TYPE, DIRECTORY, DESCRIPTION",
+        "Directory shown as basename by default",
+        "--verbose shows full absolute paths",
+        "--json outputs JSON array",
+        "Sorted by port number",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Implement 'info' command",
+      "description": "As a developer, I want to see all ports assigned to my current project.",
+      "acceptanceCriteria": [
+        "Command: port-master info",
+        "Shows all ports for cwd",
+        "Shows directory name and full path",
+        "Lists each port type with port number and description",
+        "--dir /path targets specific directory",
+        "--json outputs JSON",
+        "Shows helpful message if no ports assigned",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Implement 'rm' command",
+      "description": "As a developer, I want to remove a port assignment when I no longer need it.",
+      "acceptanceCriteria": [
+        "Command: port-master rm <type>",
+        "--dir /path targets specific directory",
+        "Fails with clear error if no matching assignment exists",
+        "--interactive prompts for confirmation before removing",
+        "Outputs removed port number on success",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Implement 'cleanup' command",
+      "description": "As a developer, I want to remove entries for deleted project directories.",
+      "acceptanceCriteria": [
+        "Command: port-master cleanup",
+        "Removes entries where directory no longer exists on filesystem",
+        "--dry-run shows what would be removed without removing",
+        "Reports count of removed entries",
+        "--interactive prompts for confirmation",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Add CLI entry point with help text",
+      "description": "As a developer, I need a CLI entry point with helpful documentation.",
+      "acceptanceCriteria": [
+        "src/index.ts as main entry with shebang",
+        "port-master --help shows all commands with descriptions",
+        "port-master <command> --help shows command-specific options",
+        "Help text includes usage examples",
+        "Shows storage location (~/.config/port-master/ports.db)",
+        "--version shows package version",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Configure build and npm packaging",
+      "description": "As a developer, I want to publish port-master as an npm global package.",
+      "acceptanceCriteria": [
+        "tsup.config.ts for bundling",
+        "Build outputs to dist/ with ESM format",
+        "package.json bin points to dist/index.js",
+        "package.json files includes dist/",
+        "npm pack creates valid tarball",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Create Claude Code skill",
+      "description": "As an AI agent user, I want port-master available as a Claude Code skill.",
+      "acceptanceCriteria": [
+        "skills/port-master/SKILL.md created",
+        "Frontmatter: name, description with trigger phrases, allowed-tools",
+        "Quick start section with common commands",
+        "Full command reference",
+        "Port range documentation table",
+        "Examples for package.json and docker-compose usage",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

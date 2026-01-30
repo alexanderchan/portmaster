@@ -1,0 +1,72 @@
+# Ralph Progress Log
+# Project: port-master
+# Branch: ralph/port-master-cli
+
+## Codebase Patterns
+- CLI package lives in `packages/cli/` directory
+- Use `pnpm typecheck` to run type checking in the CLI package
+- Use `pnpm build` to build the CLI with tsup
+- tsup.config.ts adds shebang automatically via banner option
+- pnpm workspace configured to include `packages/*`
+- Use `.js` extension in TypeScript imports for ESM compatibility (e.g., `import { getDb } from "./db.js"`)
+
+---
+
+## 2026-01-30 - US-001
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Initialized project structure with packages/cli directory
+- Created package.json with name 'port-master', type 'module', bin entry
+- Added all required dependencies: better-sqlite3, commander, zod, @clack/prompts
+- Added all required devDependencies: typescript, tsx, @types/better-sqlite3, tsup, @types/node
+- Created tsconfig.json with ESM, strict mode, NodeNext module resolution
+- Created tsup.config.ts for build configuration
+- Created minimal src/index.ts entry point with shebang
+- Verified typecheck and build both pass
+- **Files changed:** packages/cli/package.json, packages/cli/tsconfig.json, packages/cli/tsup.config.ts, packages/cli/src/index.ts, pnpm-workspace.yaml, pnpm-lock.yaml
+- **Learnings for future iterations:**
+  - This is a monorepo with pnpm workspaces
+  - CLI package is independent from the root Next.js app
+  - tsup handles ESM bundling and shebang injection
+---
+
+## 2026-01-30 - US-002
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Created database module at packages/cli/src/db.ts
+- Database path: ~/.config/port-master/ports.db
+- Auto-creates parent directories using mkdirSync with recursive option
+- Schema includes: id, directory, port_type, port, description, created_at, updated_at
+- Added UNIQUE constraint on (directory, port_type)
+- Added UNIQUE constraint on port (globally unique)
+- Exported getDb() function for lazy initialization
+- Added closeDb() utility for cleanup
+- Uses WAL journal mode for better performance
+- Created indexes for directory, port_type, and port columns
+- **Files changed:** packages/cli/src/db.ts
+- **Learnings for future iterations:**
+  - better-sqlite3 is synchronous and doesn't need async/await
+  - Use `datetime('now')` for SQLite default timestamps
+  - WAL mode improves concurrent read performance
+---
+
+## 2026-01-30 - US-003
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Created port allocation module at packages/cli/src/ports.ts
+- Implemented PORT_RANGES constant with type-specific ranges:
+  - dev: 3100-3999
+  - pg/postgres: 5500-5599
+  - redis: 6400-6499
+  - mongo: 27100-27199
+  - db: 5600-5699
+- CATCH_ALL_RANGE: 9100-9999 for unknown types
+- Implemented findAvailablePort(type) function that:
+  - Gets all used ports from database
+  - Finds first unused port in type-specific range
+  - Falls back to catch-all range if primary is exhausted
+  - Throws error if all ports exhausted
+- Added getPortRange(type) helper function
+- **Files changed:** packages/cli/src/ports.ts
+- **Learnings for future iterations:**
+  - Use .js extension in TypeScript imports for ESM compatibility
+  - Port types are case-insensitive (normalized to lowercase)
+---
+
