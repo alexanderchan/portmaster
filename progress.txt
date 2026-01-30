@@ -1,0 +1,43 @@
+## Codebase Patterns
+- Use local interface types (e.g., `InfoCommandOptions`) instead of Zod-inferred types with `.default()` for Commander options, since Commander provides optional fields
+- Command implementations go in `packages/cli/src/commands/{command}.ts` with an `execute{Command}` function
+- Export the execute function and register it in `packages/cli/src/index.ts`
+- Use `resolve(options.dir ?? process.cwd())` pattern for directory targeting
+- Use `basename(directory)` for display-friendly directory names
+- Database queries use `getDb()` from `../db.js` with prepared statements
+- For interactive prompts, use `@clack/prompts` (confirm, select, etc.) - check for `!== true` to handle cancellation
+
+---
+
+## 2026-01-30 - US-007
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented `port-master info` command
+- Shows all ports for current working directory (or --dir target)
+- Displays project directory name and full path
+- Lists each port type with port number and description in a formatted table
+- --json flag outputs JSON format
+- Shows helpful message when no ports are assigned
+- Files changed:
+  - Created: packages/cli/src/commands/info.ts
+  - Modified: packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Use local interface types for Commander options instead of Zod-inferred types with `.default()`
+  - The pnpm workspace has native module issues with better-sqlite3 that may require manual rebuild or environment fixes (Xcode CLT)
+  - Typecheck is the primary quality gate for this codebase
+---
+
+## 2026-01-30 - US-008
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented `port-master rm <type>` command
+- Removes port assignment for current working directory (or --dir target)
+- Fails with clear error if no matching assignment exists
+- --interactive flag prompts for confirmation before removing (uses @clack/prompts confirm)
+- Outputs removed port number on success
+- Files changed:
+  - Created: packages/cli/src/commands/rm.ts
+  - Modified: packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - @clack/prompts confirm() returns true/false or symbol.cancel - check for !== true to handle both cases
+  - async/await required in action handler when using interactive prompts
+---
+
