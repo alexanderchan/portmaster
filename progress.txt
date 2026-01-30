@@ -41,3 +41,20 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - async/await required in action handler when using interactive prompts
 ---
 
+## 2026-01-30 - US-009
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented `port-master cleanup` command
+- Removes entries where directory no longer exists on filesystem
+- Uses `existsSync()` to check if directories exist
+- --dry-run flag shows what would be removed without removing
+- --interactive flag prompts for confirmation before removing (uses @clack/prompts confirm)
+- Reports count of removed entries
+- Files changed:
+  - Created: packages/cli/src/commands/cleanup.ts
+  - Modified: packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Use local interface types (`CleanupCommandOptions`) for Commander options
+  - For plural/singular output, use ternary: `staleEntries.length === 1 ? "entry" : "entries"`
+  - Helper functions like `findStaleEntries()` can be exported for potential testing
+---
+
