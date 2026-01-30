@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { executeCleanup } from "./commands/cleanup.js";
 import { executeGet } from "./commands/get.js";
@@ -5,11 +7,36 @@ import { executeInfo } from "./commands/info.js";
 import { executeList } from "./commands/list.js";
 import { executeRm } from "./commands/rm.js";
 
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 const program = new Command();
 
 program
   .name("port-master")
-  .description("Track and assign consistent development ports per project directory");
+  .version(version, "-V, --version", "Display version number")
+  .description(
+    `Track and assign consistent development ports per project directory.
+
+Storage location: ~/.config/port-master/ports.db
+
+Port ranges by type:
+  dev          3100-3999   Development servers
+  pg/postgres  5500-5599   PostgreSQL databases
+  db           5600-5699   Generic databases
+  redis        6400-6499   Redis servers
+  mongo        27100-27199 MongoDB servers
+  (other)      9100-9999   Catch-all for custom types
+
+Examples:
+  $ port-master get dev          # Get/create dev port for current project
+  $ port-master get pg --desc "local postgres"
+  $ port-master list             # Show all port assignments
+  $ port-master list --json      # Output as JSON
+  $ port-master info             # Show ports for current project
+  $ port-master rm redis         # Remove redis port assignment
+  $ port-master cleanup          # Remove stale entries`
+  );
 
 // Get command - get or create a port for a service type
 program
