@@ -112,3 +112,21 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Use resolve() from node:path to normalize directory paths
 ---
 
+## 2026-01-30 - US-006
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented 'list' command at packages/cli/src/commands/list.ts
+- Command: port-master list shows all assigned ports across projects
+- Shows table format with columns: PORT, TYPE, DIRECTORY, DESCRIPTION
+- Directory shown as basename by default
+- --verbose (-v) shows full absolute paths instead of basenames
+- --json outputs JSON array for scripting/automation
+- Results sorted by port number ascending (via SQL ORDER BY)
+- Shows "No ports have been assigned yet." when database is empty
+- Calculates dynamic column widths based on content for nice table alignment
+- **Files changed:** packages/cli/src/commands/list.ts, packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - When CLI options are optional (commander passes undefined if not provided), create a local interface with optional properties instead of using Zod-inferred types that may have defaults baked in
+  - Use basename() from node:path to show short directory names
+  - The SQL ORDER BY clause handles sorting, no need for JavaScript sort
+---
+
