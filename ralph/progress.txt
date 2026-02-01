@@ -112,6 +112,67 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Use resolve() from node:path to normalize directory paths
 ---
 
+## 2026-01-30 - US-007
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented 'info' command at packages/cli/src/commands/info.ts
+- Command: port-master info shows all ports for current working directory
+- Shows directory name and full path at the top
+- Lists each port type with port number and description
+- --dir /path targets specific directory instead of cwd
+- --json outputs JSON for scripting
+- Shows helpful message "No ports assigned to this directory." when empty
+- **Files changed:** packages/cli/src/commands/info.ts, packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Re-use the same database query patterns from list command
+  - For project-specific commands, always show the full path context
+---
+
+## 2026-01-30 - US-008
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented 'rm' command at packages/cli/src/commands/rm.ts
+- Command: port-master rm <type> removes a port assignment
+- --dir /path targets specific directory instead of cwd
+- --interactive (-i) prompts for confirmation before removing using @clack/prompts
+- Fails with clear error if no matching assignment exists
+- Outputs removed port number on success
+- **Files changed:** packages/cli/src/commands/rm.ts, packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Use @clack/prompts confirm() for interactive prompts
+  - Always check if entry exists before attempting delete and show clear error
+---
+
+## 2026-01-30 - US-009
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Implemented 'cleanup' command at packages/cli/src/commands/cleanup.ts
+- Command: port-master cleanup removes entries for deleted directories
+- Checks filesystem with existsSync() for each directory in database
+- --dry-run (-n) shows what would be removed without removing
+- --interactive (-i) prompts for confirmation before removing
+- Reports count of removed entries
+- **Files changed:** packages/cli/src/commands/cleanup.ts, packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - Use existsSync() to check if directories still exist on filesystem
+  - Cleanup operations should always support dry-run mode
+---
+
+## 2026-01-31 - US-010
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified CLI entry point with help text was already implemented
+- Removed duplicate shebang from src/index.ts (tsup adds it via banner)
+- Verified all acceptance criteria:
+  - src/index.ts as main entry with shebang (handled by tsup)
+  - port-master --help shows all commands with descriptions
+  - port-master <command> --help shows command-specific options
+  - Help text includes usage examples
+  - Shows storage location (~/.config/port-master/ports.db)
+  - --version shows package version
+  - Typecheck passes
+- **Files changed:** packages/cli/src/index.ts
+- **Learnings for future iterations:**
+  - The US-010 feature was already committed but PRD wasn't updated
+  - Always verify PRD is updated after each story completion
+---
+
 ## 2026-01-30 - US-006
 Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
 - Implemented 'list' command at packages/cli/src/commands/list.ts
