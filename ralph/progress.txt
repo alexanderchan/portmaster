@@ -207,3 +207,19 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - Tarball includes only files listed in package.json "files" array plus package.json itself
 ---
 
+## 2026-01-31 - US-012
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Created Claude Code skill at skills/port-master/SKILL.md
+- Frontmatter includes: name, description with trigger phrases, allowed-tools (Bash, Read, Edit, Write)
+- Quick Start section with common commands (get, list, info, rm, cleanup)
+- Full command reference with all options documented for each command
+- Port range documentation table with all types and their ranges
+- Usage examples for package.json scripts, docker-compose.yml, shell aliases, and CI/CD integration
+- Typecheck passes
+- **Files changed:** skills/port-master/SKILL.md (new)
+- **Learnings for future iterations:**
+  - Claude Code skills use YAML frontmatter with name, description, and allowed-tools
+  - Description should include trigger phrases for when Claude should invoke the skill
+  - Command substitution examples help users integrate port-master into their workflows
+---
+
