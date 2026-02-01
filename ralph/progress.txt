@@ -191,3 +191,19 @@ Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
   - The SQL ORDER BY clause handles sorting, no need for JavaScript sort
 ---
 
+## 2026-01-31 - US-011
+Thread: https://ampcode.com/threads/$AMP_CURRENT_THREAD_ID
+- Verified build and npm packaging configuration already in place from US-001
+- Confirmed tsup.config.ts exists with ESM format, dts, clean, sourcemap, and shebang banner
+- Confirmed build outputs to dist/ with ESM format (uses import statements)
+- Confirmed package.json bin points to dist/index.js
+- Confirmed package.json files includes dist/
+- Ran pnpm pack and verified valid tarball created with dist/index.js, dist/index.d.ts, dist/index.js.map
+- Typecheck passes
+- **Files changed:** None (configuration already in place)
+- **Learnings for future iterations:**
+  - The build and packaging configuration was set up in US-001 as part of project scaffolding
+  - pnpm pack --dry-run shows tarball contents without creating file
+  - Tarball includes only files listed in package.json "files" array plus package.json itself
+---
+
