@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { createRequire } from "node:module";
 import { Command } from "commander";
 import { executeCleanup } from "./commands/cleanup.js";
