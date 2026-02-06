@@ -3,6 +3,24 @@
   "version": "0.1.0",
   "type": "module",
   "description": "CLI tool that tracks and assigns consistent development ports per project directory",
+  "author": "alex@reksie.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexanderchan/portmaster.git"
+  },
+  "homepage": "https://alexmchan.com",
+  "bugs": {
+    "url": "https://github.com/alexanderchan/portmaster/issues"
+  },
+  "keywords": [
+    "cli",
+    "port",
+    "ports",
+    "development",
+    "dev-tools",
+    "port-manager"
+  ],
   "bin": {
     "portmaster": "./dist/index.js"
   },
@@ -13,7 +31,11 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "better-sqlite3": "^11.8.1",
