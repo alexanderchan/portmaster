@@ -161,32 +161,34 @@ docker compose up
 
 ## Using with npm scripts
 
-For projects without portmaster as a dependency, use a startup script with fallbacks:
-
-```bash
-#!/bin/bash
-# scripts/dev.sh
-
-# Use portmaster if available, otherwise use defaults
-if command -v portmaster &> /dev/null; then
-  DEV_PORT=$(portmaster get dev)
-else
-  DEV_PORT=${DEV_PORT:-3000}
-fi
-
-export PORT=$DEV_PORT
-npm run dev
-```
-
-Or inline in package.json (requires portmaster installed):
+Use [dotenvx](https://dotenvx.com/) to load the `.env` file in your scripts:
 
 ```json
 {
   "scripts": {
-    "dev": "PORT=$(portmaster get dev) next dev",
-    "dev:db": "docker run -p $(portmaster get pg):5432 postgres:16"
+    "ports": "portmaster env > .env",
+    "dev": "dotenvx run -- next dev --port $DEV_PORT",
+    "dev:db": "dotenvx run -- docker run -p $PG_PORT:5432 postgres:16"
   }
 }
+```
+
+Run `npm run ports` once (or in a setup script) to generate the `.env`, then `dotenvx run` loads it automatically.
+
+For projects where portmaster may not be installed, use a fallback script:
+
+```bash
+#!/bin/bash
+# scripts/setup-ports.sh
+
+if command -v portmaster &> /dev/null; then
+  portmaster get dev
+  portmaster get pg
+  portmaster env > .env
+else
+  echo "DEV_PORT=${DEV_PORT:-3000}" > .env
+  echo "PG_PORT=${PG_PORT:-5432}" >> .env
+fi
 ```
 
 ## Philosophy
