@@ -1,9 +1,9 @@
 ---
-name: port-master
+name: portmaster
 description: |
   Track and assign consistent development ports per project directory.
   Use when: asking for port assignments, managing port allocations, setting up docker-compose ports, configuring package.json dev scripts, or cleaning up stale port entries.
-  Trigger phrases: "get a port", "assign port", "port for", "which port", "list ports", "show ports", "remove port", "cleanup ports", "port-master"
+  Trigger phrases: "get a port", "assign port", "port for", "which port", "list ports", "show ports", "remove port", "cleanup ports", "portmaster"
 allowed-tools:
   - Bash
   - Read
@@ -11,7 +11,7 @@ allowed-tools:
   - Write
 ---
 
-# port-master
+# portmaster
 
 A CLI tool that tracks and assigns consistent development ports per project directory. Each project gets predictable, non-conflicting ports based on service type.
 
@@ -19,22 +19,22 @@ A CLI tool that tracks and assigns consistent development ports per project dire
 
 ```bash
 # Get or create a port for current project
-port-master get dev
+portmaster get dev
 
 # Get a postgres port with description
-port-master get pg --desc "local postgres for testing"
+portmaster get pg --desc "local postgres for testing"
 
 # See all assigned ports across projects
-port-master list
+portmaster list
 
 # See ports for current project
-port-master info
+portmaster info
 
 # Remove a port assignment
-port-master rm redis
+portmaster rm redis
 
 # Clean up entries for deleted directories
-port-master cleanup
+portmaster cleanup
 ```
 
 ## Command Reference
@@ -44,8 +44,8 @@ port-master cleanup
 Get or create a port for a service type in the current project.
 
 ```bash
-port-master get <type> [options]
-port-master add <type> [options]  # alias for get
+portmaster get <type> [options]
+portmaster add <type> [options]  # alias for get
 ```
 
 **Options:**
@@ -54,9 +54,9 @@ port-master add <type> [options]  # alias for get
 
 **Examples:**
 ```bash
-port-master get dev                          # Get dev port for cwd
-port-master get pg --desc "main database"    # With description
-port-master get redis --dir /path/to/project # For specific directory
+portmaster get dev                          # Get dev port for cwd
+portmaster get pg --desc "main database"    # With description
+portmaster get redis --dir /path/to/project # For specific directory
 ```
 
 **Output:** Just the port number (for scripting)
@@ -68,7 +68,7 @@ port-master get redis --dir /path/to/project # For specific directory
 Show all assigned ports across all projects.
 
 ```bash
-port-master list [options]
+portmaster list [options]
 ```
 
 **Options:**
@@ -77,9 +77,9 @@ port-master list [options]
 
 **Examples:**
 ```bash
-port-master list           # Table format with basenames
-port-master list --verbose # Table format with full paths
-port-master list --json    # JSON for scripting
+portmaster list           # Table format with basenames
+portmaster list --verbose # Table format with full paths
+portmaster list --json    # JSON for scripting
 ```
 
 ---
@@ -89,7 +89,7 @@ port-master list --json    # JSON for scripting
 Show all ports assigned to the current (or specified) project.
 
 ```bash
-port-master info [options]
+portmaster info [options]
 ```
 
 **Options:**
@@ -98,9 +98,9 @@ port-master info [options]
 
 **Examples:**
 ```bash
-port-master info                    # Ports for cwd
-port-master info --dir /path/to/project
-port-master info --json             # JSON output
+portmaster info                    # Ports for cwd
+portmaster info --dir /path/to/project
+portmaster info --json             # JSON output
 ```
 
 ---
@@ -110,7 +110,7 @@ port-master info --json             # JSON output
 Remove a port assignment for a service type.
 
 ```bash
-port-master rm <type> [options]
+portmaster rm <type> [options]
 ```
 
 **Options:**
@@ -119,9 +119,9 @@ port-master rm <type> [options]
 
 **Examples:**
 ```bash
-port-master rm redis                # Remove redis port for cwd
-port-master rm dev --dir /project   # Remove from specific directory
-port-master rm pg --interactive     # Confirm before removing
+portmaster rm redis                # Remove redis port for cwd
+portmaster rm dev --dir /project   # Remove from specific directory
+portmaster rm pg --interactive     # Confirm before removing
 ```
 
 ---
@@ -131,7 +131,7 @@ port-master rm pg --interactive     # Confirm before removing
 Remove entries for project directories that no longer exist on the filesystem.
 
 ```bash
-port-master cleanup [options]
+portmaster cleanup [options]
 ```
 
 **Options:**
@@ -140,9 +140,9 @@ port-master cleanup [options]
 
 **Examples:**
 ```bash
-port-master cleanup            # Remove stale entries
-port-master cleanup --dry-run  # Preview what would be removed
-port-master cleanup -i         # Confirm before removing
+portmaster cleanup            # Remove stale entries
+portmaster cleanup --dry-run  # Preview what would be removed
+portmaster cleanup -i         # Confirm before removing
 ```
 
 ---
@@ -164,7 +164,7 @@ If a type-specific range is exhausted, ports are allocated from the catch-all ra
 
 ## Storage
 
-Database location: `~/.config/port-master/ports.db`
+Database location: `~/.config/portmaster/ports.db`
 
 ---
 
@@ -172,20 +172,20 @@ Database location: `~/.config/port-master/ports.db`
 
 ### package.json Scripts
 
-Use port-master in npm scripts with command substitution:
+Use portmaster in npm scripts with command substitution:
 
 ```json
 {
   "scripts": {
-    "dev": "next dev -p $(port-master get dev)",
-    "db:start": "docker run -p $(port-master get pg):5432 postgres"
+    "dev": "next dev -p $(portmaster get dev)",
+    "db:start": "docker run -p $(portmaster get pg):5432 postgres"
   }
 }
 ```
 
 ### docker-compose.yml
 
-Use port-master to assign consistent ports in docker-compose:
+Use portmaster to assign consistent ports in docker-compose:
 
 ```yaml
 services:
@@ -206,8 +206,8 @@ Then in a setup script or `.env` file:
 
 ```bash
 # Generate .env with assigned ports
-echo "POSTGRES_PORT=$(port-master get pg --desc 'docker postgres')" > .env
-echo "REDIS_PORT=$(port-master get redis --desc 'docker redis')" >> .env
+echo "POSTGRES_PORT=$(portmaster get pg --desc 'docker postgres')" > .env
+echo "REDIS_PORT=$(portmaster get redis --desc 'docker redis')" >> .env
 ```
 
 ### Shell Aliases
@@ -216,10 +216,10 @@ Add to your `.bashrc` or `.zshrc`:
 
 ```bash
 # Quick port lookup
-alias pm='port-master'
-alias pmg='port-master get'
-alias pml='port-master list'
-alias pmi='port-master info'
+alias pm='portmaster'
+alias pmg='portmaster get'
+alias pml='portmaster list'
+alias pmi='portmaster info'
 ```
 
 ### CI/CD Integration
@@ -228,7 +228,7 @@ Use `--json` output for programmatic access:
 
 ```bash
 # Get all ports as JSON
-PORTS=$(port-master list --json)
+PORTS=$(portmaster list --json)
 
 # Parse with jq
 echo "$PORTS" | jq '.[] | select(.port_type == "dev") | .port'

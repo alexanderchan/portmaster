@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import { Command } from "commander";
 import { executeCleanup } from "./commands/cleanup.js";
+import { executeEnv } from "./commands/env.js";
 import { executeGet } from "./commands/get.js";
 import { executeInfo } from "./commands/info.js";
 import { executeList } from "./commands/list.js";
@@ -76,6 +77,17 @@ program
   .option("--json", "Output as JSON")
   .action((options: { dir?: string; json?: boolean }) => {
     executeInfo(options);
+  });
+
+// Env command - output ports in .env format
+program
+  .command("env")
+  .description("Output ports in .env format (for use with docker-compose, shell scripts, etc.)")
+  .option("-d, --dir <path>", "Target directory instead of current working directory")
+  .option("-p, --prefix <prefix>", "Add a prefix to variable names (e.g., APP -> APP_DEV_PORT)")
+  .option("--no-uppercase", "Don't uppercase variable names")
+  .action((options: { dir?: string; prefix?: string; uppercase?: boolean }) => {
+    executeEnv(options);
   });
 
 // Rm command - remove a port assignment (or all for a directory)

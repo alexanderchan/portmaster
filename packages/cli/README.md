@@ -12,28 +12,31 @@ npm install -g portmaster
 
 ```bash
 # Get/create a dev port for the current project
-port-master get dev
+portmaster get dev
 
 # Get a postgres port with a description
-port-master get pg --desc "local postgres"
+portmaster get pg --desc "local postgres"
 
 # List ports for current directory
-port-master list
+portmaster list
 
 # List all ports across all directories
-port-master list --all
+portmaster list --all
 
 # Show detailed info for current project
-port-master info
+portmaster info
+
+# Output ports as .env format
+portmaster env
 
 # Remove a specific port assignment
-port-master rm redis
+portmaster rm redis
 
 # Remove all ports for current directory
-port-master rm
+portmaster rm
 
 # Clean up entries for deleted directories
-port-master cleanup
+portmaster cleanup
 ```
 
 ## Port Ranges
@@ -86,6 +89,21 @@ Options:
 - `-d, --dir <path>` - Target directory instead of cwd
 - `-i, --interactive` - Prompt for confirmation
 
+### `portmaster env`
+
+Output all ports for the current project in `.env` format.
+
+```bash
+$ portmaster env
+DEV_PORT=3142
+PG_PORT=5523
+```
+
+Options:
+- `-d, --dir <path>` - Target directory instead of cwd
+- `-p, --prefix <prefix>` - Add prefix to variable names (e.g., `--prefix APP` → `APP_DEV_PORT`)
+- `--no-uppercase` - Don't uppercase variable names
+
 ### `portmaster cleanup`
 
 Remove entries for deleted project directories.
@@ -93,6 +111,93 @@ Remove entries for deleted project directories.
 Options:
 - `-n, --dry-run` - Show what would be removed
 - `-i, --interactive` - Prompt for confirmation
+
+## Using with Docker Compose
+
+The `env` command makes it easy to use dynamic ports with Docker Compose.
+
+### Step 1: Generate .env file
+
+```bash
+portmaster get dev
+portmaster get pg
+portmaster env > .env
+```
+
+This creates a `.env` file:
+```
+DEV_PORT=3142
+PG_PORT=5523
+```
+
+### Step 2: Reference in compose.yml
+
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "${DEV_PORT}:3000"
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/mydb
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    ports:
+      - "${PG_PORT}:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=mydb
+```
+
+### Step 3: Run
+
+```bash
+docker compose up
+```
+
+## Using with npm scripts
+
+For projects without portmaster as a dependency, use a startup script with fallbacks:
+
+```bash
+#!/bin/bash
+# scripts/dev.sh
+
+# Use portmaster if available, otherwise use defaults
+if command -v portmaster &> /dev/null; then
+  DEV_PORT=$(portmaster get dev)
+else
+  DEV_PORT=${DEV_PORT:-3000}
+fi
+
+export PORT=$DEV_PORT
+npm run dev
+```
+
+Or inline in package.json (requires portmaster installed):
+
+```json
+{
+  "scripts": {
+    "dev": "PORT=$(portmaster get dev) next dev",
+    "dev:db": "docker run -p $(portmaster get pg):5432 postgres:16"
+  }
+}
+```
+
+## Philosophy
+
+portmaster is a **helper tool**, not a hard dependency:
+
+1. **Design your app to read ports from environment variables** (`PORT`, `DATABASE_URL`, etc.)
+2. **Use portmaster to generate consistent values** for those env vars across projects
+3. **Provide fallbacks** so projects work without portmaster installed
+
+This way, each developer can choose whether to use portmaster or set ports manually.
 
 ## License
 

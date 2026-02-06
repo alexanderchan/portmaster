@@ -1,6 +1,6 @@
 {
   "name": "portmaster",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "CLI tool that tracks and assigns consistent development ports per project directory",
   "author": "alex@reksie.com",
