@@ -3,24 +3,15 @@ import { confirm } from "@clack/prompts";
 import { getDb } from "../db.js";
 import type { PortEntry } from "../types.js";
 
-/** Options for the rm command - matches what Commander provides */
 interface RmCommandOptions {
   dir?: string;
   interactive?: boolean;
 }
 
-/**
- * Remove a port assignment for a directory and port type.
- *
- * @param type - The port type to remove
- * @param directory - The absolute path to the directory
- * @returns The removed port entry, or null if none existed
- */
 export function removePort(type: string, directory: string): PortEntry | null {
   const normalizedType = type.toLowerCase();
   const db = getDb();
 
-  // Check if the assignment exists
   const existingEntry = db
     .prepare("SELECT * FROM ports WHERE directory = ? AND port_type = ?")
     .get(directory, normalizedType) as PortEntry | undefined;
@@ -29,7 +20,6 @@ export function removePort(type: string, directory: string): PortEntry | null {
     return null;
   }
 
-  // Delete the entry
   db.prepare("DELETE FROM ports WHERE directory = ? AND port_type = ?").run(
     directory,
     normalizedType
@@ -38,22 +28,60 @@ export function removePort(type: string, directory: string): PortEntry | null {
   return existingEntry;
 }
 
-/**
- * Execute the rm command - removes a port assignment.
- *
- * @param type - The port type to remove
- * @param options - Command options (dir, interactive)
- */
+export function removeAllPortsForDirectory(directory: string): PortEntry[] {
+  const db = getDb();
+
+  const entries = db
+    .prepare("SELECT * FROM ports WHERE directory = ? ORDER BY port ASC")
+    .all(directory) as PortEntry[];
+
+  if (entries.length === 0) {
+    return [];
+  }
+
+  db.prepare("DELETE FROM ports WHERE directory = ?").run(directory);
+
+  return entries;
+}
+
 export async function executeRm(
-  type: string,
+  type: string | undefined,
   options: RmCommandOptions = {}
 ): Promise<void> {
   const directory = resolve(options.dir ?? process.cwd());
-  const normalizedType = type.toLowerCase();
-
   const db = getDb();
 
-  // Check if the assignment exists first
+  if (!type) {
+    const entries = db
+      .prepare("SELECT * FROM ports WHERE directory = ? ORDER BY port ASC")
+      .all(directory) as PortEntry[];
+
+    if (entries.length === 0) {
+      console.error(`Error: No port assignments found for directory '${directory}'`);
+      process.exit(1);
+    }
+
+    if (options.interactive) {
+      console.log(`Ports for ${directory}:`);
+      for (const e of entries) {
+        console.log(`  ${e.port} (${e.port_type})`);
+      }
+      const shouldRemove = await confirm({
+        message: `Remove all ${entries.length} port(s) for this directory?`,
+      });
+      if (shouldRemove !== true) {
+        console.log("Cancelled.");
+        return;
+      }
+    }
+
+    const removed = removeAllPortsForDirectory(directory);
+    console.log(`Removed ${removed.length} port(s) for ${directory}`);
+    return;
+  }
+
+  const normalizedType = type.toLowerCase();
+
   const existingEntry = db
     .prepare("SELECT * FROM ports WHERE directory = ? AND port_type = ?")
     .get(directory, normalizedType) as PortEntry | undefined;
@@ -65,24 +93,20 @@ export async function executeRm(
     process.exit(1);
   }
 
-  // If interactive mode, prompt for confirmation
   if (options.interactive) {
     const shouldRemove = await confirm({
       message: `Remove port ${existingEntry.port} (${normalizedType}) from ${directory}?`,
     });
 
-    // User cancelled or said no
     if (shouldRemove !== true) {
       console.log("Cancelled.");
       return;
     }
   }
 
-  // Remove the port
   const removed = removePort(type, directory);
 
   if (removed) {
     console.log(removed.port);
   }
 }
-

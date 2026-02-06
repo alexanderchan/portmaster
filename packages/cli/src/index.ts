@@ -12,12 +12,12 @@ const { version } = require("../package.json") as { version: string };
 const program = new Command();
 
 program
-  .name("port-master")
+  .name("portmaster")
   .version(version, "-V, --version", "Display version number")
   .description(
     `Track and assign consistent development ports per project directory.
 
-Storage location: ~/.config/port-master/ports.db
+Storage location: ~/.config/portmaster/ports.db
 
 Port ranges by type:
   dev          3100-3999   Development servers
@@ -28,13 +28,13 @@ Port ranges by type:
   (other)      9100-9999   Catch-all for custom types
 
 Examples:
-  $ port-master get dev          # Get/create dev port for current project
-  $ port-master get pg --desc "local postgres"
-  $ port-master list             # Show all port assignments
-  $ port-master list --json      # Output as JSON
-  $ port-master info             # Show ports for current project
-  $ port-master rm redis         # Remove redis port assignment
-  $ port-master cleanup          # Remove stale entries`
+  $ portmaster get dev          # Get/create dev port for current project
+  $ portmaster get pg --desc "local postgres"
+  $ portmaster list             # Show ports for current directory
+  $ portmaster list --all       # Show all ports across all directories
+  $ portmaster info             # Show ports for current project
+  $ portmaster rm redis         # Remove redis port assignment
+  $ portmaster cleanup          # Remove stale entries`
   );
 
 // Get command - get or create a port for a service type
@@ -57,13 +57,14 @@ program
     executeGet(type, options);
   });
 
-// List command - show all assigned ports
+// List command - show ports for current directory (or all with --all)
 program
   .command("list")
-  .description("Show all assigned ports across projects")
-  .option("-v, --verbose", "Show full absolute paths instead of basenames")
+  .description("Show assigned ports for the current directory")
+  .option("-a, --all", "Show all ports across all directories")
+  .option("-d, --dir <path>", "Target directory instead of current working directory")
   .option("--json", "Output as JSON array")
-  .action((options: { verbose?: boolean; json?: boolean }) => {
+  .action((options: { all?: boolean; dir?: string; json?: boolean }) => {
     executeList(options);
   });
 
@@ -77,13 +78,13 @@ program
     executeInfo(options);
   });
 
-// Rm command - remove a port assignment
+// Rm command - remove a port assignment (or all for a directory)
 program
-  .command("rm <type>")
-  .description("Remove a port assignment for a service type")
+  .command("rm [type]")
+  .description("Remove a port assignment for a service type, or all ports if no type given")
   .option("-d, --dir <path>", "Target directory instead of current working directory")
   .option("-i, --interactive", "Prompt for confirmation before removing")
-  .action(async (type: string, options: { dir?: string; interactive?: boolean }) => {
+  .action(async (type: string | undefined, options: { dir?: string; interactive?: boolean }) => {
     await executeRm(type, options);
   });
 

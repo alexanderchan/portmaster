@@ -4,9 +4,9 @@ import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 
 /**
- * Database path: ~/.config/port-master/ports.db
+ * Database path: ~/.config/portmaster/ports.db
  */
-export const DB_PATH = join(homedir(), ".config", "port-master", "ports.db");
+export const DB_PATH = join(homedir(), ".config", "portmaster", "ports.db");
 
 /**
  * SQL schema for the ports table

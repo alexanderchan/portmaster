@@ -2,6 +2,44 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Installation
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### Convex Setup
+
+Configure a Convex dev deployment before running the app:
+
+**Local development (self-hosted):**
+
+```bash
+npx convex dev --once --configure new --dev-deployment=local --project=port-master
+```
+
+**Cloud development:**
+
+```bash
+npx convex dev --once --configure new --dev-deployment=cloud --project=port-master
+```
+
+This will create/update `.env.local` with your Convex deployment settings (`CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`).
+
+To watch for changes and sync with Convex:
+
+```bash
+npx convex dev
+```
+
+### Run the Development Server
+
 First, run the development server:
 
 ```bash

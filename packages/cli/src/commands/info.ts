@@ -75,7 +75,7 @@ function printInfo(info: InfoOutput): void {
     console.log(`No ports have been assigned to ${info.directory}.`);
     console.log(`  Path: ${info.fullPath}`);
     console.log("");
-    console.log('Use "port-master get <type>" to assign a port.');
+    console.log('Use "portmaster get <type>" to assign a port.');
     return;
   }
 

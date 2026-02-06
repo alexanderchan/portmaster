@@ -1,10 +1,10 @@
 {
-  "name": "port-master",
+  "name": "portmaster",
   "version": "0.1.0",
   "type": "module",
   "description": "CLI tool that tracks and assigns consistent development ports per project directory",
   "bin": {
-    "port-master": "./dist/index.js"
+    "portmaster": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
