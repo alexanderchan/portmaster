@@ -1,74 +1,207 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# portmaster
 
-## Getting Started
+CLI tool that tracks and assigns consistent development ports per project directory.
 
-### Installation
-
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
-
-### Convex Setup
-
-Configure a Convex dev deployment before running the app:
-
-**Local development (self-hosted):**
+## Installation
 
 ```bash
-npx convex dev --once --configure new --dev-deployment=local --project=port-master
+npm install -g portmaster
 ```
 
-**Cloud development:**
+## Usage
 
 ```bash
-npx convex dev --once --configure new --dev-deployment=cloud --project=port-master
+# Get/create a dev port for the current project
+portmaster get dev
+
+# Get a postgres port with a description
+portmaster get pg --desc "local postgres"
+
+# List ports for current directory
+portmaster list
+
+# List all ports across all directories
+portmaster list --all
+
+# Show detailed info for current project
+portmaster info
+
+# Output ports as .env format
+portmaster env
+
+# Remove a specific port assignment
+portmaster rm redis
+
+# Remove all ports for current directory
+portmaster rm
+
+# Clean up entries for deleted directories
+portmaster cleanup
 ```
 
-This will create/update `.env.local` with your Convex deployment settings (`CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`).
+## Port Ranges
 
-To watch for changes and sync with Convex:
+| Type         | Range       | Description          |
+|--------------|-------------|----------------------|
+| dev          | 3100-3999   | Development servers  |
+| pg/postgres  | 5500-5599   | PostgreSQL databases |
+| db           | 5600-5699   | Generic databases    |
+| redis        | 6400-6499   | Redis servers        |
+| mongo        | 27100-27199 | MongoDB servers      |
+| (other)      | 9100-9999   | Catch-all for custom |
+
+## Storage
+
+Port assignments are stored in `~/.config/portmaster/ports.db` (SQLite).
+
+## Commands
+
+### `portmaster get <type>`
+
+Get or create a port for a service type in the current project.
+
+Options:
+- `-d, --dir <path>` - Target directory instead of cwd
+- `--desc <description>` - Optional description
+
+### `portmaster list`
+
+Show assigned ports.
+
+Options:
+- `-a, --all` - Show all ports across all directories
+- `-d, --dir <path>` - Target directory instead of cwd
+- `--json` - Output as JSON
+
+### `portmaster info`
+
+Show all ports for the current project.
+
+Options:
+- `-d, --dir <path>` - Target directory instead of cwd
+- `--json` - Output as JSON
+
+### `portmaster rm [type]`
+
+Remove a port assignment. If no type given, removes all ports for the directory.
+
+Options:
+- `-d, --dir <path>` - Target directory instead of cwd
+- `-i, --interactive` - Prompt for confirmation
+
+### `portmaster env`
+
+Output all ports for the current project in `.env` format.
 
 ```bash
-npx convex dev
+$ portmaster env
+DEV_PORT=3142
+PG_PORT=5523
 ```
 
-### Run the Development Server
+Options:
+- `-d, --dir <path>` - Target directory instead of cwd
+- `-p, --prefix <prefix>` - Add prefix to variable names (e.g., `--prefix APP` → `APP_DEV_PORT`)
+- `--no-uppercase` - Don't uppercase variable names
 
-First, run the development server:
+### `portmaster cleanup`
+
+Remove entries for deleted project directories.
+
+Options:
+- `-n, --dry-run` - Show what would be removed
+- `-i, --interactive` - Prompt for confirmation
+
+## Using with Docker Compose
+
+The `env` command makes it easy to use dynamic ports with Docker Compose.
+
+### Step 1: Generate .env file
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+portmaster get dev
+portmaster get pg
+portmaster env > .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This creates a `.env` file:
+```
+DEV_PORT=3142
+PG_PORT=5523
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Step 2: Reference in compose.yml
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```yaml
+services:
+  app:
+    build: .
+    ports:
+      - "${DEV_PORT}:3000"
+    environment:
+      - DATABASE_URL=postgres://user:pass@db:5432/mydb
+    depends_on:
+      - db
 
-## Learn More
+  db:
+    image: postgres:16
+    ports:
+      - "${PG_PORT}:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=mydb
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Step 3: Run
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker compose up
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Using with npm scripts
 
-## Deploy on Vercel
+Use [dotenvx](https://dotenvx.com/) to load the `.env` file in your scripts:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "scripts": {
+    "ports": "portmaster env > .env",
+    "dev": "dotenvx run -- next dev --port $DEV_PORT",
+    "dev:db": "dotenvx run -- docker run -p $PG_PORT:5432 postgres:16"
+  }
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run `npm run ports` once (or in a setup script) to generate the `.env`, then `dotenvx run` loads it automatically.
+
+For projects where portmaster may not be installed, use a fallback script:
+
+```bash
+#!/bin/bash
+# scripts/setup-ports.sh
+
+if command -v portmaster &> /dev/null; then
+  portmaster get dev
+  portmaster get pg
+  portmaster env > .env
+else
+  echo "DEV_PORT=${DEV_PORT:-3000}" > .env
+  echo "PG_PORT=${PG_PORT:-5432}" >> .env
+fi
+```
+
+## Philosophy
+
+portmaster is a **helper tool**, not a hard dependency:
+
+1. **Design your app to read ports from environment variables** (`PORT`, `DATABASE_URL`, etc.)
+2. **Use portmaster to generate consistent values** for those env vars across projects
+3. **Provide fallbacks** so projects work without portmaster installed
+
+This way, each developer can choose whether to use portmaster or set ports manually.
+
+## License
+
+MIT
+
